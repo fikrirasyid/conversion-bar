@@ -317,68 +317,91 @@ class Conversion_Bar_Admin {
 		?>
 		<p><label for=""><?php _e( 'This conversion bar will be displayed on:' ); ?></label></p>
 		<div class="content-selector post-type-post">
-			<?php
-				/**
-				 * Get recent posts
-				 */
-				$recent_posts_args = array(
-					'posts_per_page' 	=> 10,
-					'post_status'		=> 'publish'
-				);
-
-				/**
-				 * Exclude post which has been selected
-				 */
-				if( $conversion_bar_assigned_to && is_array( $conversion_bar_assigned_to ) ){
-					$recent_posts_args['post__not_in'] = $conversion_bar_assigned_to;
-				}
-
-				/**
-				 * Get recent posts object
-				 */
-				$recent_posts = new WP_Query( $recent_posts_args );
-
-				/**
-				 * Loop recent posts
-				 */
-				if( $recent_posts->have_posts() ){
-					echo '<ul class="conversion-bar-targets">';
-
-					/**
-					 * Prepend selected posts on top of recent posts list
-					 */
-					if( $conversion_bar_assigned_to && is_array( $conversion_bar_assigned_to ) ){
-						$this->get_selected_posts( $conversion_bar_assigned_to );
-					}
-
-					while ( $recent_posts->have_posts() ) {
-						$recent_posts->the_post();
-
-						?>
-						<li>
-							<label for="conversion-bar-target-<?php the_ID(); ?>">
-								<input type="checkbox" name="conversion-bar-target[]" id="conversion-bar-target-<?php the_ID(); ?>" value="<?php the_ID(); ?>">
-								<?php the_title(); ?>
-							</label>							
-						</li>
-						<?php
-
-					}
-
-					echo '</ul>';
-
-					echo '<a href="#" class="button more" id="conversion-bar-load-more-content">'. __( "Load More Content", "conversion-bar" ) .'</a>';
-				} else {
-					echo '<p>' . __( "No Post Found", "conversion-bar" ) . '</p>';
-				}
-
-				/**
-				 * Reset loop
-				 */
-				wp_reset_postdata();
-			?>	
+			<?php $this->get_recent_content( 1, $conversion_bar_assigned_to, $conversion_bar_id, false ); ?>	
 		</div>
 		<?php
+	}
+
+	/**
+	 * Get recent post for conversion bar admin UI
+	 * 
+	 * @access private
+	 * 
+	 * @since 1.0.0
+	 */
+	private function get_recent_content( $paged = 1, $selected = array(), $conversion_bar_id = false, $list_only = false ){
+		/**
+		 * Get recent posts
+		 */
+		$recent_posts_args = array(
+			'paged'				=> ( int ) absint( $paged ),
+			'posts_per_page' 	=> 10,
+			'post_status'		=> 'publish'
+		);
+
+		/**
+		 * Exclude post which has been selected
+		 */
+		if( $selected && is_array( $selected ) && !empty( $selected ) ){
+			$recent_posts_args['post__not_in'] = $selected;
+		}
+
+		/**
+		 * Get recent posts object
+		 */
+		$recent_posts = new WP_Query( $recent_posts_args );
+
+		/**
+		 * Display ul based on param given
+		 */
+		if( !$list_only ){
+			echo '<ul class="conversion-bar-targets">';
+		}
+
+		/**
+		 * Loop recent posts
+		 */
+		if( $recent_posts->have_posts() ){
+
+			/**
+			 * Prepend selected posts on top of recent posts list
+			 */
+			if( $selected && is_array( $selected ) ){
+				$this->get_selected_posts( $selected );
+			}
+
+			while ( $recent_posts->have_posts() ) {
+				$recent_posts->the_post();
+
+				?>
+				<li>
+					<label for="conversion-bar-target-<?php the_ID(); ?>">
+						<input type="checkbox" name="conversion-bar-target[]" id="conversion-bar-target-<?php the_ID(); ?>" value="<?php the_ID(); ?>">
+						<?php the_title(); ?>
+					</label>							
+				</li>
+				<?php
+			}
+
+		} else {
+			echo '<li>' . __( "No Post Found", "conversion-bar" ) . '</li>';
+		}
+
+		/**
+		 * Display ul closing tag based on param given
+		 */
+		if( !$list_only ){
+			echo '</ul>';
+
+			if( $conversion_bar_id ){
+				echo '<a href="#" class="button more" id="conversion-bar-load-more-content" data-paged="2" data-conversion-id="'. $conversion_bar_id .'">'. __( "Load More Content", "conversion-bar" ) .'</a>';				
+			}
+		}
+
+		/**
+		 * Reset loop
+		 */
+		wp_reset_postdata();
 	}
 
 	/**
