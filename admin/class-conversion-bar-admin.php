@@ -181,7 +181,7 @@ class Conversion_Bar_Admin {
 	 * 
 	 * @since 1.0.0
 	 */
-	public function build_conversion_bar_input( $post ){
+	public function the_message_input( $post ){
 		/**
 		 * Bail if this isn't admin screen
 		 */
@@ -221,5 +221,77 @@ class Conversion_Bar_Admin {
 			<label for="content"><?php _e( 'Popup Message:' ); ?></label>
 		</div>
 		<?php
+	}
+
+	/**
+	 * Save conversion bar meta data
+	 * 
+	 * @access public
+	 * 
+	 * @since 1.0.0
+	 */
+	public function save_message( $post_id, $post, $update ){
+
+		/**
+		 * Bail if this isn't conversion_bar post type
+		 */
+		if( !isset( $post->post_type ) || 'conversion_bar' != $post->post_type ) {
+			return;
+		}
+
+		/**
+		 * Check current save status of post
+		 */
+		$is_post_autosave = (bool) wp_is_post_autosave( $post_id ); // Autosave, found in wp-includes/revisison.php
+		$is_post_revision = (bool) wp_is_post_revision( $post_id ); // Revision, found in wp-includes/revision.php
+
+		/**
+		 * Check current subtitle nonce status of post
+		 */
+		$is_nonce_set = (bool) isset( $_POST[ '_conversion_bar_nonce' ] );
+		/**
+		 * If the nonce is set then check if it's verified.
+		 * This gets rid of undefined index notices for _subtitle_data_nonce.
+		 */
+		if ( $is_nonce_set ) {
+			$nonce = sanitize_key( $_POST[ '_conversion_bar_nonce' ] );
+			$is_verified_nonce = (bool) wp_verify_nonce( $nonce, "conversion_bar_{$post_id}" );
+		}
+		else {
+			$is_verified_nonce = null;
+		}
+
+		/**
+		 * Bail if the save status or nonce status of the post isn't correct
+		 */
+		if ( $is_post_autosave || $is_post_revision || ! $is_verified_nonce || ! $is_nonce_set ) {
+			return;
+		}
+
+		/**
+		 * Bail if the current user doesn't have permission to edit the current post type
+		 */
+		$post_type_object = (object) get_post_type_object( $post->post_type );
+		$can_edit_post_type = (bool) current_user_can( $post_type_object->cap->edit_post, $post_id );
+
+		if ( ! $can_edit_post_type ) {
+			return;
+		}
+
+		/**
+		 * Validate and sanitize data
+		 */
+		$conversion_bar_allowed_tags = array(
+			'i' 		=> array(), // italicized text
+			'em' 		=> array(), // emphasized text
+			'strong' 	=> array(), // strong text
+			'a'			=> array() // link text
+		);
+		$conversion_bar_message = wp_kses( $_POST['conversion-bar-text'], $conversion_bar_allowed_tags );
+
+		/**
+		 * Save the conversion bar to post meta
+		 */
+		update_post_meta( $post_id, '_conversion_bar_message', $conversion_bar_message );
 	}
 }
