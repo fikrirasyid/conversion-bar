@@ -158,6 +158,7 @@ class Conversion_Bar {
 		$this->loader->add_action( 'save_post', $plugin_admin, 'save_message', 10, 3 );			
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_styles' );
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts' );
+		$this->loader->add_action( 'wp_ajax_conversion_bar_recent_posts', $plugin_admin, 'get_recent_content_ajax' );
 
 	}
 

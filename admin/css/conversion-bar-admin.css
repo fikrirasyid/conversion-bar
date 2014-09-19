@@ -33,6 +33,11 @@
 	overflow-y: scroll;
 }
 
+#conversion-bar-setup .content-selector .post-type{
+	text-transform: uppercase;
+	color: #afafaf;
+}
+
 #conversion-bar-load-more-content{
 	display: block;
 	width: 150px;

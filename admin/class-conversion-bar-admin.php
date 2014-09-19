@@ -41,6 +41,11 @@ class Conversion_Bar_Admin {
 	private $version;
 
 	/**
+	 * Conversion bar can appear only appear on these selected post types
+	 */
+	private $post_type_support;
+
+	/**
 	 * Initialize the class and set its properties.
 	 *
 	 * @since    1.0.0
@@ -51,7 +56,7 @@ class Conversion_Bar_Admin {
 
 		$this->name = $name;
 		$this->version = $version;
-
+		$this->post_type_support = apply_filters( 'conversion_bar_post_type_support', array( 'post', 'page' ) );
 	}
 
 	/**
@@ -336,7 +341,8 @@ class Conversion_Bar_Admin {
 		$recent_posts_args = array(
 			'paged'				=> ( int ) absint( $paged ),
 			'posts_per_page' 	=> 10,
-			'post_status'		=> 'publish'
+			'post_status'		=> 'publish',
+			'post_type'			=> $this->post_type_support
 		);
 
 		/**
@@ -377,7 +383,7 @@ class Conversion_Bar_Admin {
 				<li>
 					<label for="conversion-bar-target-<?php the_ID(); ?>">
 						<input type="checkbox" name="conversion-bar-target[]" id="conversion-bar-target-<?php the_ID(); ?>" value="<?php the_ID(); ?>">
-						<?php the_title(); ?>
+						<span class="post-type"><?php echo get_post_type(); ?></span> - <?php the_title(); ?>
 					</label>							
 				</li>
 				<?php
@@ -394,7 +400,8 @@ class Conversion_Bar_Admin {
 			echo '</ul>';
 
 			if( $conversion_bar_id ){
-				echo '<a href="#" class="button more" id="conversion-bar-load-more-content" data-paged="2" data-conversion-id="'. $conversion_bar_id .'">'. __( "Load More Content", "conversion-bar" ) .'</a>';				
+				$load_more_nonce = wp_create_nonce( "get_recent_posts_{$conversion_bar_id}" );
+				echo '<a href="#" class="button more" id="conversion-bar-load-more-content" data-paged="2" data-conversion-id="'. $conversion_bar_id .'" data-nonce="'. $load_more_nonce .'">'. __( "Load More Content", "conversion-bar" ) .'</a>';				
 			}
 		}
 
@@ -417,7 +424,8 @@ class Conversion_Bar_Admin {
 			$selected_posts_args = array(
 				'post__in' 				=> $selected,
 				'posts_per_page' 		=> -1,
-				'ignore_sticky_posts' 	=> true
+				'ignore_sticky_posts' 	=> true,
+				'post_type'				=> $this->post_type_support
 			);
 
 			/**
@@ -450,5 +458,33 @@ class Conversion_Bar_Admin {
 			 */
 			wp_reset_postdata();				
 		}
+	}
+
+	/**
+	 * Get recent content endpoint for load more button
+	 * 
+	 * @access public
+	 * 
+	 * @since 1.0.0
+	 */
+	public function get_recent_content_ajax(){
+		/**
+		 * Only process the ajax call if the request has requeired parameter
+		 */
+		if( isset( $_REQUEST['paged'] ) && isset( $_REQUEST['conversion_bar_id'] ) && isset( $_REQUEST['_wpnonce']) ){
+			$paged 				= ( int ) absint( $_REQUEST['paged'] );
+			$conversion_bar_id 	= ( int ) absint( $_REQUEST['conversion_bar_id'] );
+			$selected 			= get_post_meta( $conversion_bar_id, '_conversion_bar_assigned_to', true );
+			$nonce 				= $_REQUEST['_wpnonce'];
+
+			/**
+			 * Only process ajax call if this is real deal
+			 */
+			if( $paged > 1 && $conversion_bar_id > 1 && wp_verify_nonce( $nonce, "get_recent_posts_{$conversion_bar_id}" ) ){
+				$this->get_recent_content( $paged, $selected, $conversion_bar_id, true );
+			}
+		}
+
+		die();
 	}
 }
