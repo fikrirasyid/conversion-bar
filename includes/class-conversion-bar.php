@@ -153,6 +153,8 @@ class Conversion_Bar {
 		$plugin_admin = new Conversion_Bar_Admin( $this->get_conversion_bar(), $this->get_version() );
 
 		$this->loader->add_action( 'init', $plugin_admin, 'register_post_type' );		
+		$this->loader->add_action( 'add_meta_boxes_conversion_bar', $plugin_admin, 'add_meta_boxes' );		
+		$this->loader->add_action( 'edit_form_after_title', $plugin_admin, 'build_conversion_bar_input' );		
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_styles' );
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts' );
 

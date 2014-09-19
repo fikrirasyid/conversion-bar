@@ -2,3 +2,25 @@
  * All of the CSS for your dashboard-specific functionality should be
  * included in this file.
  */
+
+#edit-slug-box{
+	display: none;
+}
+
+#conversion-bar-div label{
+	display: block;
+	margin-top: 40px;
+	margin-bottom: 15px;
+	font-size: 16px;
+	font-weight: 400;
+}
+
+#conversion-bar-text{
+	padding: 8px 8px;
+	font-size: 1.2em;
+	line-height: 1.3;
+	width: 100%;
+	outline: 0px;
+	margin: 0px;
+	background-color: rgb(255, 255, 255);
+}
