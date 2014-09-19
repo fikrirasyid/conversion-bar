@@ -100,4 +100,48 @@ class Conversion_Bar_Admin {
 
 	}
 
+	/**
+	 * Registering custom post type that is used by Conversion bar
+	 * 
+	 * @since  	1.0.0
+	 * @access  public
+	 */
+	public function register_post_type(){
+		$labels = array(
+			'name'               => _x( 'Conversion Bars', 'post type general name', 'conversion-bar' ),
+			'singular_name'      => _x( 'Conversion Bar', 'post type singular name', 'conversion-bar' ),
+			'menu_name'          => _x( 'Conversion Bars', 'admin menu', 'conversion-bar' ),
+			'name_admin_bar'     => _x( 'Conversion Bar', 'add new on admin bar', 'conversion-bar' ),
+			'add_new'            => _x( 'Add New', 'conversion bar', 'conversion-bar' ),
+			'add_new_item'       => __( 'Add New Conversion Bar', 'conversion-bar' ),
+			'new_item'           => __( 'New Conversion Bar', 'conversion-bar' ),
+			'edit_item'          => __( 'Edit Conversion Bar', 'conversion-bar' ),
+			'view_item'          => __( 'View Conversion Bar', 'conversion-bar' ),
+			'all_items'          => __( 'All Conversion Bars', 'conversion-bar' ),
+			'search_items'       => __( 'Search Conversion Bars', 'conversion-bar' ),
+			'parent_item_colon'  => __( 'Parent Conversion Bars:', 'conversion-bar' ),
+			'not_found'          => __( 'No conversion bars found.', 'conversion-bar' ),
+			'not_found_in_trash' => __( 'No conversion bars found in Trash.', 'conversion-bar' )
+		);
+
+		$args = array(
+			'labels'             => $labels,
+			'public'             => true,
+			'publicly_queryable' => true,
+			'show_ui'            => true,
+			'show_in_menu'       => true,
+			'menu_icon'			 => 'dashicons-megaphone',
+			'query_var'          => true,
+			'rewrite'            => array( 'slug' => 'conversion-bar' ),
+			'capability_type'    => 'post',
+			'has_archive'        => false,
+			'hierarchical'       => false,
+			'menu_position'      => null,
+			'supports'           => array( 'title', 'editor' ),
+			'exclude_from_search'=> true
+		);
+
+		register_post_type( 'conversion-bar', $args );		
+	}
+
 }
