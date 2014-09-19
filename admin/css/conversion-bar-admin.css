@@ -24,3 +24,18 @@
 	margin: 0px;
 	background-color: rgb(255, 255, 255);
 }
+
+#conversion-bar-setup .content-selector{
+	border: 1px solid #dfdfdf;
+	background: #fafafa;
+	padding: 0 10px;
+	height: 300px;
+	overflow-y: scroll;
+}
+
+#conversion-bar-load-more-content{
+	display: block;
+	width: 150px;
+	margin: 30px auto 20px;
+	text-align: center;
+}

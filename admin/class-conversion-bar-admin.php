@@ -145,36 +145,6 @@ class Conversion_Bar_Admin {
 	}
 
 	/**
-	 * Add and manage metaboxes for conversion bar edit screen
-	 * 
-	 * @since 	1.0.0
-	 * @access 	public
-	 */
-	public function add_meta_boxes( $post ){
-		global $wp_meta_boxes;
-
-		// Before adding any meta boxes, remove any third party meta box first
-		$page 		= get_current_screen();
-		$page_id 	= $page->id;
-
-		// Loop the metaboxes and unset everything except the core metabox
-		if( isset( $wp_meta_boxes[$page_id] ) && is_array( $wp_meta_boxes[$page_id] ) ){
-			foreach ($wp_meta_boxes[$page_id] as $meta_boxes_key => $meta_boxes ) {
-				foreach ( $meta_boxes as $meta_box_key => $meta_box ) {
-
-					// Unset all meta box except the core
-					if( 'core' != $meta_box_key ){
-						unset( $wp_meta_boxes[$page_id][$meta_boxes_key][$meta_box_key] );
-					}
-				}
-
-			}		
-		}
-
-		// Registering conversion bar's meta box
-	}
-
-	/**
 	 * Display conversion bar input below the title box
 	 * 
 	 * @access public
@@ -293,5 +263,169 @@ class Conversion_Bar_Admin {
 		 * Save the conversion bar to post meta
 		 */
 		update_post_meta( $post_id, '_conversion_bar_message', $conversion_bar_message );
+	}
+
+	/**
+	 * Add and manage metaboxes for conversion bar edit screen
+	 * 
+	 * @since 	1.0.0
+	 * @access 	public
+	 */
+	public function add_meta_boxes( $post ){
+		global $wp_meta_boxes;
+
+		// Before adding any meta boxes, remove any third party meta box first
+		$page 		= get_current_screen();
+		$page_id 	= $page->id;
+
+		// Loop the metaboxes and unset everything except the core metabox
+		if( isset( $wp_meta_boxes[$page_id] ) && is_array( $wp_meta_boxes[$page_id] ) ){
+			foreach ($wp_meta_boxes[$page_id] as $meta_boxes_key => $meta_boxes ) {
+				foreach ( $meta_boxes as $meta_box_key => $meta_box ) {
+
+					// Unset all meta box except the core
+					if( 'core' != $meta_box_key ){
+						unset( $wp_meta_boxes[$page_id][$meta_boxes_key][$meta_box_key] );
+					}
+				}
+
+			}		
+		}
+
+		// Registering conversion bar's meta box
+		add_meta_box( 'conversion-bar-setup', __( 'Setup', 'conversion-bar'), array( $this, 'the_setup_metabox'), 'conversion_bar', 'advanced', 'default', $post );
+	}
+
+	/**
+	 * Display conversion bar setup metabox UI
+	 * 
+	 * @since 1.0.0
+	 * 
+	 * @access public
+	 */
+	public function the_setup_metabox( $post ){
+		/**
+		 * Define conversion bar ID
+		 */
+		$conversion_bar_id = ( int ) absint( $post->ID );
+
+		/**
+		 * Get current data
+		 */
+		$conversion_bar_assigned_to = get_post_meta( $conversion_bar_id, '_conversion_bar_assigned_to', true );
+
+		?>
+		<p><label for=""><?php _e( 'This conversion bar will be displayed on:' ); ?></label></p>
+		<div class="content-selector post-type-post">
+			<?php
+				/**
+				 * Get recent posts
+				 */
+				$recent_posts_args = array(
+					'posts_per_page' 	=> 10,
+					'post_status'		=> 'publish'
+				);
+
+				/**
+				 * Exclude post which has been selected
+				 */
+				if( $conversion_bar_assigned_to && is_array( $conversion_bar_assigned_to ) ){
+					$recent_posts_args['post__not_in'] = $conversion_bar_assigned_to;
+				}
+
+				/**
+				 * Get recent posts object
+				 */
+				$recent_posts = new WP_Query( $recent_posts_args );
+
+				/**
+				 * Loop recent posts
+				 */
+				if( $recent_posts->have_posts() ){
+					echo '<ul class="conversion-bar-targets">';
+
+					/**
+					 * Prepend selected posts on top of recent posts list
+					 */
+					if( $conversion_bar_assigned_to && is_array( $conversion_bar_assigned_to ) ){
+						$this->get_selected_posts( $conversion_bar_assigned_to );
+					}
+
+					while ( $recent_posts->have_posts() ) {
+						$recent_posts->the_post();
+
+						?>
+						<li>
+							<label for="conversion-bar-target-<?php the_ID(); ?>">
+								<input type="checkbox" name="conversion-bar-target[]" id="conversion-bar-target-<?php the_ID(); ?>" value="<?php the_ID(); ?>">
+								<?php the_title(); ?>
+							</label>							
+						</li>
+						<?php
+
+					}
+
+					echo '</ul>';
+
+					echo '<a href="#" class="button more" id="conversion-bar-load-more-content">'. __( "Load More Content", "conversion-bar" ) .'</a>';
+				} else {
+					echo '<p>' . __( "No Post Found", "conversion-bar" ) . '</p>';
+				}
+
+				/**
+				 * Reset loop
+				 */
+				wp_reset_postdata();
+			?>	
+		</div>
+		<?php
+	}
+
+	/**
+	 * Display post which uses current conversion bar as list - checkbox
+	 * 
+	 * @access private
+	 * 
+	 * @since 1.0.0
+	 */
+	private function get_selected_posts( $selected = array() ){
+		if( is_array( $selected ) && !empty( $selected ) ){
+
+			$selected_posts_args = array(
+				'post__in' 				=> $selected,
+				'posts_per_page' 		=> -1,
+				'ignore_sticky_posts' 	=> true
+			);
+
+			/**
+			 * Get selected posts object
+			 */
+			$selected_posts = new WP_Query( $selected_posts_args );
+
+			/**
+			 * Loop selected posts
+			 */
+			if( $selected_posts->have_posts() ){
+
+				while ( $selected_posts->have_posts() ) {
+					$selected_posts->the_post();
+
+					?>
+					<li>
+						<label for="conversion-bar-target-<?php the_ID(); ?>">
+							<input type="checkbox" name="conversion-bar-target[]" id="conversion-bar-target-<?php the_ID(); ?>" value="<?php the_ID(); ?>" checked="checked">
+							<strong><?php the_title(); ?></strong>
+						</label>							
+					</li>
+					<?php
+
+				}
+			}		
+
+			/**
+			 * Reset loop
+			 */
+			wp_reset_postdata();				
+		}
 	}
 }
