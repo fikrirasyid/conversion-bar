@@ -361,7 +361,7 @@ class Conversion_Bar_Admin {
 		 * Display ul based on param given
 		 */
 		if( !$list_only ){
-			echo '<ul class="conversion-bar-targets">';
+			echo '<ul id="conversion-bar-targets">';
 		}
 
 		/**
@@ -400,8 +400,12 @@ class Conversion_Bar_Admin {
 			echo '</ul>';
 
 			if( $conversion_bar_id ){
-				$load_more_nonce = wp_create_nonce( "get_recent_posts_{$conversion_bar_id}" );
-				echo '<a href="#" class="button more" id="conversion-bar-load-more-content" data-paged="2" data-conversion-id="'. $conversion_bar_id .'" data-nonce="'. $load_more_nonce .'">'. __( "Load More Content", "conversion-bar" ) .'</a>';				
+				$load_more_url 		= admin_url() . 'admin-ajax.php?action=conversion_bar_recent_posts';
+				$load_more_nonce 	= wp_create_nonce( "get_recent_posts_{$conversion_bar_id}" );
+				$loading_img_src 	= includes_url( 'images/wpspin.gif' );
+
+				echo '<img src="'. $loading_img_src .'" id="conversion-bar-loading-image" title="'. __( "Loading...", "conversion-bar" ) .'" />';
+				echo '<a href="'. $load_more_url .'" class="button more" id="conversion-bar-load-more-content" data-paged="2" data-conversion-bar-id="'. $conversion_bar_id .'" data-nonce="'. $load_more_nonce .'">'. __( "Load More Content", "conversion-bar" ) .'</a>';
 			}
 		}
 

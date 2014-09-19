@@ -38,6 +38,12 @@
 	color: #afafaf;
 }
 
+#conversion-bar-loading-image{
+	display: none;
+	width: 16px;
+	margin: 30px auto 20px;
+}
+
 #conversion-bar-load-more-content{
 	display: block;
 	width: 150px;

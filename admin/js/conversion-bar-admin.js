@@ -1,32 +1,55 @@
 (function( $ ) {
-	'use strict';
+	$( document ).ready(function(){
 
-	/**
-	 * All of the code for your Dashboard-specific JavaScript source
-	 * should reside in this file.
-	 *
-	 * Note that this assume you're going to use jQuery, so it prepares
-	 * the $ function reference to be used within the scope of this
-	 * function.
-	 *
-	 * From here, you're able to define handlers for when the DOM is
-	 * ready:
-	 *
-	 * $(function() {
-	 *
-	 * });
-	 *
-	 * Or when the window is loaded:
-	 *
-	 * $( window ).load(function() {
-	 *
-	 * });
-	 *
-	 * ...and so on.
-	 *
-	 * Remember that ideally, we should not attach any more than a single DOM-ready or window-load handler
-	 * for any particular page. Though other scripts in WordPress core, other plugins, and other themes may
-	 * be doing this, we should try to minimize doing that in our own work.
-	 */
+		/**
+		 * Load more content
+		 */
+		$('body').on( 'click', '#conversion-bar-load-more-content', function(e){
+			e.preventDefault();
 
+			var button 				= $(this);
+			var loading				= $('#conversion-bar-loading-image');
+			var href 				= button.attr( 'href' );
+			var paged 				= button.attr( 'data-paged' );
+			var conversion_bar_id 	= button.attr( 'data-conversion-bar-id' );
+			var _wpnonce 			= button.attr( 'data-nonce' );
+
+			/**
+			 * Display loading state
+			 */
+			button.hide();
+			loading.show().css( 'display', 'block' );
+
+			$.ajax({
+				url	: href,
+				type: "POST",
+				data: {
+					paged : paged,
+					conversion_bar_id : conversion_bar_id,
+					_wpnonce : _wpnonce
+				}
+			}).done(function( response ){
+				if( '<li>No Post Found</li>' != response ){
+					/**
+					 * Append data to list
+					 */
+					$(response).appendTo('#conversion-bar-targets');
+
+					/**
+					 * Update paged data
+					 */
+					var new_paged = parseInt( paged ) + 1;
+					button.attr( 'data-paged', new_paged );
+
+					/**
+					 * End loading state
+					 */
+					button.show();
+					loading.hide();					
+				} else {
+					$('#conversion-bar-targets').append('<li style="text-align: center; padding: 10px 0;">All content has been displayed!</li>');					
+				}
+			});
+		});
+	});
 })( jQuery );
